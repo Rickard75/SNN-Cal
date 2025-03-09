@@ -48,7 +48,7 @@ vector<int>*    cublet_idx;
 vector<int>*    cell_idx;
 
 
-
+// Reads the binary file
 vector<float> read_matrices(string filename){
     // Step 1: Read the shape from the text file
     ifstream shape_file("shape.txt");
@@ -107,7 +107,7 @@ int total_reflections(int n){
   return total_points;
 }
 
-
+// open a ROOT Tree file, for each event compute: emitted photons and arrival time for each sensor at each timestep, energy and dispersion and centroid for each cubelet
 void genPhotonTree(string filename, string treename, string outputFilePath,
                    vector<float>& emission_matrix, int max_N,
                    int verbose=0, bool primary_only=true, int max_event=1000) {
@@ -405,10 +405,6 @@ void genPhotonTree(string filename, string treename, string outputFilePath,
   return;
 }
 
-
-
-
-
 double onAxis_SolidAngle(double a, double b, double d) {
   double alpha = a/(2*d);
   double beta  = b/(2*d);
@@ -467,8 +463,8 @@ vector<vector<vector<vector<double>>>> create_matrices(double cellSizeX, double 
     }      
   } 
   vector<vector<vector<vector<double>>>> result;
-  result.push_back(angle_matrix);
-  result.push_back(time_matrix);
+  result.push_back(angle_matrix); // store solid angles from a point (0,y,0) to a point in the sensors plate
+  result.push_back(time_matrix);  // store flight times between those points
 
   return result;
 }
