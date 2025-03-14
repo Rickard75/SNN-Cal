@@ -237,7 +237,7 @@ void genPhotonTree(string filename, string treename, string outputFilePath,
   
   // computing N of reflections
   int total_points = total_reflections(max_N);
-  vector<int> shape{nCellsXY, nCellsXY, nCellsZ, total_reflections(5), nCells[0], nCells[2], 2};
+  vector<int> shape{nCells[0], nCells[1], nCells[2], total_reflections(5), nCells[0], nCells[2], 2};
   int dims = shape.size();
   
   // ROOT filename extraction
