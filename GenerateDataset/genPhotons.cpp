@@ -6,10 +6,13 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <array>
+#include <tuple>
 #include "TMath.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TVector3.h"
+#include "TRandom3.h"
 
 using namespace std;
 
@@ -21,32 +24,95 @@ enum Particle {
   other = 4
 };
 
-// set useful constant values
-int nCubletsX = 10, nCubletsY = 10, nCubletsZ = 10;
-int nCellsXY = 10;
-int nCellsZ  = 10;
-double cellSizeXY = 3; //mm
-double cellSizeZ  = 12; //mm
+/////////////////////////////////////////////////////////////////
+//                                                             //
+//                          CONSTANTS                          //
+//                                                             //
+/////////////////////////////////////////////////////////////////
+
+// DETECTOR GEOMETRY
+array<int, 3> nCublets = {10, 10, 10};
+int TotCublets = nCublets[0]*nCublets[1]*nCublets[2];
+array<double, 3> cubletSize = {30, 30, 120}; //mm
+array<double, 3> startCublet = {
+                  -cubletSize[0] * (1.0*(nCublets[0])/2), // -150 mm
+                  -cubletSize[1] * (1.0*(nCublets[1])/2), // -150 mm
+                  -cubletSize[2] * (1.0*(nCublets[2])/2)  // -600 mm
+                  }; // position of the left side of the first cublet in the calorimeter
+array<int, 3> nCells = {10, 10, 10}; 
+array<double, 3> cellSize = {3, 3, 12}; //mm
+array<double, 3> startCell = {
+                    -cellSize[0] * (1.0*(nCells[0])/2), // -15 mm
+                    -cellSize[1] * (1.0*(nCells[1])/2), // -15 mm
+                    -cellSize[2] * (1.0*(nCells[2])/2)  // -6 mm
+                  }; // position of the left side of the first cell (relative to the centre of the cublet)
+
+// LIGHT CHARACTERISTICS
 double deltaE_vtx_thr = -50e3; // MeV, threshold of energy loss to be considered
-                               // primary vertex of the event
-int n_sensors = nCellsXY*nCellsZ;
-int nCublets = nCubletsX*nCubletsY*nCubletsZ;
+                               //      primary vertex of the event
+
+// SENSORS GRID
+int n_sensors = nCells[0]*nCells[2]; // along xz plane
 double lightyield = 200; // ph/MeV 
 double max_t = 20; // ns
 double dt = 0.2; // ns
 int timesteps = max_t/dt;
 
+/////////////////////////////////////////////////////////////////
+//                                                             //
+//                     DATA CONVERSIONS                        //
+//                                                             //
+/////////////////////////////////////////////////////////////////
 
-// input tree variables
-int i_evt;
-int n_int;
-vector<int>*    pdg;
-vector<double>* edep;
-vector<double>* deltae;
-vector<double>* glob_t;
-vector<int>*    cublet_idx;
-vector<int>*    cell_idx;
+inline array<int, 3> SingleIndexTo3DIndexes(int idx, array<int, 3> nUnits){
+  array<int, 3> indexes = {
+                     idx%nUnits[0],                        // i%x
+                    (idx%(nUnits[0]*nUnits[1]))/nUnits[0], // (i%(x*y))/x
+                     idx/(nUnits[0]*nUnits[1]),            // i/(x*y)
+                  };
+  return indexes;
+}
 
+// convert cublet and cell indexes in 3D coordinates
+array<double, 3> IndexesToCoordinates(int cublet_idx, int cell_idx){
+  array<int, 3> cublet_idxs = SingleIndexTo3DIndexes(cublet_idx, nCublets);
+  array<int, 3> cell_idxs   = SingleIndexTo3DIndexes(cell_idx,   nCells);
+  array<double, 3> coordinates;
+  for(int i = 0; i < nCublets.size(); i++){
+    coordinates[i] = startCublet[i] + (cublet_idxs[i]+0.5)*cubletSize[i] +
+                     startCell[i]   + (cell_idxs[i]+0.5)  *cellSize[i];
+  }
+  return coordinates;
+}
+
+array<int, 4> CoordinatesToIndexes(array<double, 3> coordinates){
+  array<int, 3> cublet_idxs, cell_idxs;
+  for(int i = 0; i < coordinates.size(); i++){
+    cublet_idxs[i] = (coordinates[i] -  startCublet[i])/cubletSize[i]; 
+    cell_idxs[i]   = (coordinates[i] - (startCublet[i]+cublet_idxs[i]*cubletSize[i]))/cellSize[i]; 
+  }
+  int cublet_idx = cublet_idxs[0] +
+                   cublet_idxs[1] * nCublets[0] +
+                   cublet_idxs[2] * nCublets[0]*nCublets[1];
+  return {cublet_idx, cell_idxs[0], cell_idxs[1], cell_idxs[2]}; 
+}
+
+// convert cublet and cell indexes to new coordinates system:
+array<int, 4> CoordinatesShift(int cublet_idx, int cell_idx, array<double, 2> shift){
+  array<double, 3> coordinates = IndexesToCoordinates(cublet_idx, cell_idx);
+  for(int i = 0; i < shift.size(); i++){
+    coordinates[i] += shift[i];
+  }
+  array<int, 4> results = CoordinatesToIndexes(coordinates);
+  return results;
+}
+
+
+/////////////////////////////////////////////////////////////////
+//                                                             //
+//                     BINARY DATA READING                     //
+//                                                             //
+/////////////////////////////////////////////////////////////////
 
 // Reads the binary file
 vector<float> read_matrices(string filename){
@@ -84,40 +150,40 @@ vector<float> read_matrices(string filename){
     return data;
 }
 
-int total_reflections(int n){
-  vector<int> extra_points;
-  for(int i = 0; i < n+1; i++){
-    switch(i){
-      case 0:
-        extra_points.push_back(1);
-        break;
-      case 1:
-        extra_points.push_back(5);
-        break;
-      default:
-        extra_points.push_back(4*(2*i-1));
-    }
-  }
 
-  int total_points = 0;
-  for(int i = 0; i < extra_points.size(); i++){
-    total_points += extra_points[i];
-  }
 
-  return total_points;
-}
+
+/////////////////////////////////////////////////////////////////
+//                                                             //
+//                     ROOT DATA MANAGEMENT                    //
+//                                                             //
+/////////////////////////////////////////////////////////////////
+
+// input tree variables
+int i_evt;
+int n_int;
+vector<int>*    pdg;
+vector<double>* edep;
+vector<double>* deltae;
+vector<double>* glob_t;
+vector<int>*    cublet_idx;
+vector<int>*    cell_idx;
+
 
 // open a ROOT Tree file, for each event compute: emitted photons and arrival time for each sensor at each timestep, energy and dispersion and centroid for each cubelet
 void genPhotonTree(string filename, string treename, string outputFilePath,
                    vector<float>& emission_matrix, int max_N,
+                   TRandom3 rng,
                    int verbose=0, bool primary_only=true, int max_event=1000) {
 
   auto start_time = std::chrono::high_resolution_clock::now();
-
+  
+  // computing N of reflections
   int total_points = total_reflections(max_N);
-  vector<int> shape{nCellsXY, nCellsXY, nCellsZ, total_reflections(5), nCellsXY, nCellsZ, 2};
+  vector<int> shape{nCellsXY, nCellsXY, nCellsZ, total_reflections(5), nCells[0], nCells[2], 2};
   int dims = shape.size();
-
+  
+  // ROOT filename extraction
   size_t name_start = filename.find_last_of('/');
   size_t name_end   = filename.find_last_of('.');
   string name = filename.substr(name_start+1, name_end-name_start-1);
@@ -147,7 +213,8 @@ void genPhotonTree(string filename, string treename, string outputFilePath,
   vector<int> Nint(nCublets, 0);                         // number of interactions...
   vector<int> pdg_max(nCublets, 0);                      // pdg encoding of primary particle...
                                                          // per cublet 
-
+  
+  // opening output file
   ofstream outfile;
   if(primary_only){
     outfile.open(outputFilePath + name + ".dat", std::ios::binary);
@@ -187,6 +254,10 @@ void genPhotonTree(string filename, string treename, string outputFilePath,
     // primary vertex identification variables
     double dE_primary = 0;
     int primary_peak_cub = -1;
+
+    // generate random shift to preprocess bimodal GEANT4 input data
+    array<double, 2> shift = {rng.Uniform(0, cubletSize[0]), rng.Uniform(0, cubletSize[1])};  //{0.5*cubletSize[0], 0.5*cubletSize[1]}; 
+    cout << "CREATED SHIFT" << endl;
     
     // loop over interaction per event
     for (int j = 0; j < n_int; j++) {
@@ -197,7 +268,18 @@ void genPhotonTree(string filename, string treename, string outputFilePath,
       double dE = (*deltae)[j];
       if (E > 0 && t0 < max_t) {
 
-        int cub_i = (*cublet_idx)[j];
+        int old_cub_i = (*cublet_idx)[j];
+        int old_cell_i = (*cell_idx)[j];
+        // shift cublet and cell indexes
+        //cout << "PROVA" << endl;
+        auto new_coordinates = CoordinatesShift(old_cub_i, old_cell_i, shift);
+        //cout << "PROVA2" << endl;
+        int cub_i = new_coordinates[0];
+        int x_idx = new_coordinates[1];
+        int y_idx = new_coordinates[2];
+        int z_idx = new_coordinates[3];
+        if(cub_i < 0 || cub_i >= TotCublets) continue;   
+        //cout << cub_i << endl;
 
         // update total energy
         Etot[cub_i] += E;
@@ -242,10 +324,12 @@ void genPhotonTree(string filename, string treename, string outputFilePath,
           }
         }
 
+        /*
         int cell_i = (*cell_idx)[j];
         int z_idx =  cell_i/(nCellsXY*nCellsXY);           // i/(x*y)
         int y_idx = (cell_i%(nCellsXY*nCellsXY))/nCellsXY; // (i%(x*y))/x
         int x_idx =  cell_i%nCellsXY;                      // i%x
+        */
 
         // update centroid
         Ecentroid[cub_i].SetXYZ(Ecentroid[cub_i].X() + x_idx*E,
@@ -265,15 +349,19 @@ void genPhotonTree(string filename, string treename, string outputFilePath,
                   emission_matrix.begin() + chunk_start + chunk_size,
                   cached_chunk.begin());
         for(int n = 0; n < total_points; n++){
-          for (int i_sx = 0; i_sx < nCellsXY; i_sx++) {
-            for (int i_sz = 0; i_sz < nCellsZ; i_sz++) {
-              int sensor_i = i_sz*nCellsXY+i_sx;
+          for (int i_sx = 0; i_sx < nCells[0]; i_sx++) {
+            for (int i_sz = 0; i_sz < nCells[2]; i_sz++) {
+              int sensor_i = i_sz*nCells[0]+i_sx;
               int idx = i_sz * shape[dims-1] +
                         i_sx * shape[dims-2]*shape[dims-1] +
                         n    * shape[dims-3]*shape[dims-2]*shape[dims-1];
               int n_photon = round(ph_emitted*cached_chunk[idx]);
               double time = (t0+cached_chunk[idx+1]);
               int step = time/dt;
+              // cout << "Matrix:  " << idx << "   " << cached_chunk[idx] << "   " << cached_chunk[idx+1] << endl 
+              //      << "  Photons:  " << ph_emitted << "   " << n_photon << endl
+              //      << "  Time:  " << t0 << "   " << time << "   " << step << endl;
+
               if(time < max_t) {
                 photon_matrix[cub_i][step][sensor_i] += n_photon;
               }
@@ -284,7 +372,7 @@ void genPhotonTree(string filename, string treename, string outputFilePath,
     }
 
     // correct centroid estimation
-    for(int i_cub = 0; i_cub < nCublets; i_cub++) {
+    for(int i_cub = 0; i_cub < TotCublets; i_cub++) {
       if(!(Etot[i_cub] > 0)) continue;
       Ecentroid[i_cub].SetXYZ(Ecentroid[i_cub].X()/Etot[i_cub],
                               Ecentroid[i_cub].Y()/Etot[i_cub],
@@ -293,17 +381,22 @@ void genPhotonTree(string filename, string treename, string outputFilePath,
 
     // compute energy dispersions
     for (int j = 0; j < n_int; j++) {
-      int cub_i = (*cublet_idx)[j];
+      int old_cub_i = (*cublet_idx)[j];
+      int old_cell_i = (*cell_idx)[j];
+      // shift cublet and cell indexes
+      auto new_coordinates = CoordinatesShift(old_cub_i, old_cell_i, shift);
+      int cub_i = new_coordinates[0];
+      int x_idx = new_coordinates[1];
+      int y_idx = new_coordinates[2];
+      int z_idx = new_coordinates[3];
+
+      if(cub_i < 0 || cub_i >= TotCublets) continue; 
 
       // check if energy has been released in the cublet, otherwise skip
       if((primary_only && (cub_i != primary_peak_cub)) || !(Etot[cub_i] > 0)) continue;
       
       double E  = (*edep)[j];
-      int cell_i = (*cell_idx)[j];
-      int z_idx =  cell_i/(nCellsXY*nCellsXY);           // i/(x*y)
-      int y_idx = (cell_i%(nCellsXY*nCellsXY))/nCellsXY; // (i%(x*y))/x
-      int x_idx =  cell_i%nCellsXY;                      // i%x
-      
+
       // update energy dispersion vector
       sigmaE[cub_i].SetXYZ(sigmaE[cub_i].X() + pow(x_idx - Ecentroid[cub_i].X(), 2)*E,
                            sigmaE[cub_i].Y() + pow(y_idx - Ecentroid[cub_i].Y(), 2)*E,
@@ -320,7 +413,7 @@ void genPhotonTree(string filename, string treename, string outputFilePath,
     }
 
     // Write data to file
-    for(int i_cub = 0; i_cub < nCublets; i_cub++) {
+    for(int i_cub = 0; i_cub < TotCublets; i_cub++) {
 
       // check if energy has been released in the cublet, otherwise skip
       if((primary_only && (i_cub != primary_peak_cub)) || !(Etot[i_cub] > 0)) continue;
@@ -405,6 +498,35 @@ void genPhotonTree(string filename, string treename, string outputFilePath,
   return;
 }
 
+/////////////////////////////////////////////////////////////////
+//                                                             //
+//                     REFLECTIONS MANAGEMENT                  //
+//                                                             //
+/////////////////////////////////////////////////////////////////
+
+int total_reflections(int n){
+  vector<int> extra_points;
+  for(int i = 0; i < n+1; i++){
+    switch(i){
+      case 0:
+        extra_points.push_back(1);
+        break;
+      case 1:
+        extra_points.push_back(5);
+        break;
+      default:
+        extra_points.push_back(4*(2*i-1));
+    }
+  }
+
+  int total_points = 0;
+  for(int i = 0; i < extra_points.size(); i++){
+    total_points += extra_points[i];
+  }
+
+  return total_points;
+}
+
 double onAxis_SolidAngle(double a, double b, double d) {
   double alpha = a/(2*d);
   double beta  = b/(2*d);
@@ -432,9 +554,16 @@ double offAxis_SolidAngle(double A, double B, double a, double b, double d) {
   return omega;
 }
 
+
+/////////////////////////////////////////////////////////////////
+//                                                             //
+//                     PHOTONS DATA CREATION                   //
+//                                                             //
+/////////////////////////////////////////////////////////////////
+
 // assumes sensors on upper xz plane
 vector<vector<vector<vector<double>>>> create_matrices(double cellSizeX, double cellSizeY, double cellSizeZ,
-                                                       int nCellsX, int nCellsY, int nCellsZ) {
+                                                       int nCells[0], int nCells[1], int nCells[2]) {
 
   // light speed
   double n = 2.2; // PWO refractive index
