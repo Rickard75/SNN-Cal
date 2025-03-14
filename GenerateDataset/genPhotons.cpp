@@ -169,6 +169,63 @@ vector<double>* glob_t;
 vector<int>*    cublet_idx;
 vector<int>*    cell_idx;
 
+/////////////////////////////////////////////////////////////////
+//                                                             //
+//                     REFLECTIONS MANAGEMENT                  //
+//                                                             //
+/////////////////////////////////////////////////////////////////
+
+int total_reflections(int n){
+  vector<int> extra_points;
+  for(int i = 0; i < n+1; i++){
+    switch(i){
+      case 0:
+        extra_points.push_back(1);
+        break;
+      case 1:
+        extra_points.push_back(5);
+        break;
+      default:
+        extra_points.push_back(4*(2*i-1));
+    }
+  }
+
+  int total_points = 0;
+  for(int i = 0; i < extra_points.size(); i++){
+    total_points += extra_points[i];
+  }
+
+  return total_points;
+}
+
+double onAxis_SolidAngle(double a, double b, double d) {
+  double alpha = a/(2*d);
+  double beta  = b/(2*d);
+  return 4*TMath::ASin(alpha*beta/TMath::Sqrt((1+alpha*alpha)*(1+beta*beta))); 
+}
+
+double offAxis_SolidAngle(double A, double B, double a, double b, double d) {
+  double sign_A = 1;
+  if(A < 0) {
+    sign_A = -1;
+    A *= -1;
+  }
+  double sign_B = 1;
+  if(B < 0) {
+    sign_B = -1;
+    B *= -1;
+  }
+  double omega1 = onAxis_SolidAngle(2*(a+sign_A*A), 2*(b+sign_B*B), d);
+  double omega2 = onAxis_SolidAngle(2*A,            2*(b+sign_B*B), d);
+  double omega3 = onAxis_SolidAngle(2*(a+sign_A*A), 2*B,            d);
+  double omega4 = onAxis_SolidAngle(2*A,            2*B,            d);
+
+  double omega = (omega1 - sign_A*omega2 - sign_B*omega3 + sign_A*sign_B*omega4)/4;
+
+  return omega;
+}
+
+
 
 // open a ROOT Tree file, for each event compute: emitted photons and arrival time for each sensor at each timestep, energy and dispersion and centroid for each cubelet
 void genPhotonTree(string filename, string treename, string outputFilePath,
@@ -498,61 +555,6 @@ void genPhotonTree(string filename, string treename, string outputFilePath,
   return;
 }
 
-/////////////////////////////////////////////////////////////////
-//                                                             //
-//                     REFLECTIONS MANAGEMENT                  //
-//                                                             //
-/////////////////////////////////////////////////////////////////
-
-int total_reflections(int n){
-  vector<int> extra_points;
-  for(int i = 0; i < n+1; i++){
-    switch(i){
-      case 0:
-        extra_points.push_back(1);
-        break;
-      case 1:
-        extra_points.push_back(5);
-        break;
-      default:
-        extra_points.push_back(4*(2*i-1));
-    }
-  }
-
-  int total_points = 0;
-  for(int i = 0; i < extra_points.size(); i++){
-    total_points += extra_points[i];
-  }
-
-  return total_points;
-}
-
-double onAxis_SolidAngle(double a, double b, double d) {
-  double alpha = a/(2*d);
-  double beta  = b/(2*d);
-  return 4*TMath::ASin(alpha*beta/TMath::Sqrt((1+alpha*alpha)*(1+beta*beta))); 
-}
-
-double offAxis_SolidAngle(double A, double B, double a, double b, double d) {
-  double sign_A = 1;
-  if(A < 0) {
-    sign_A = -1;
-    A *= -1;
-  }
-  double sign_B = 1;
-  if(B < 0) {
-    sign_B = -1;
-    B *= -1;
-  }
-  double omega1 = onAxis_SolidAngle(2*(a+sign_A*A), 2*(b+sign_B*B), d);
-  double omega2 = onAxis_SolidAngle(2*A,            2*(b+sign_B*B), d);
-  double omega3 = onAxis_SolidAngle(2*(a+sign_A*A), 2*B,            d);
-  double omega4 = onAxis_SolidAngle(2*A,            2*B,            d);
-
-  double omega = (omega1 - sign_A*omega2 - sign_B*omega3 + sign_A*sign_B*omega4)/4;
-
-  return omega;
-}
 
 
 /////////////////////////////////////////////////////////////////
