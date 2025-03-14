@@ -259,7 +259,7 @@ void genPhotonTree(string filename, string treename, string outputFilePath,
   tree->SetBranchAddress("Tcell_idx",       &cell_idx);
 
   
-  vector<vector<vector<int>>> photon_matrix(nCublets,  vector<vector<int>>(
+  vector<vector<vector<int>>> photon_matrix(TotCublets,  vector<vector<int>>(
                                             timesteps, vector<int>(
                                             n_sensors, 0)));
   vector<double> dEmax(TotCublets, 0.0);                   // maximum energy diff between step beginning and end...
