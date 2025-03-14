@@ -561,17 +561,18 @@ double offAxis_SolidAngle(double A, double B, double a, double b, double d) {
 //                                                             //
 /////////////////////////////////////////////////////////////////
 
+
 // assumes sensors on upper xz plane
 vector<vector<vector<vector<double>>>> create_matrices(double cellSizeX, double cellSizeY, double cellSizeZ,
-                                                       int nCells[0], int nCells[1], int nCells[2]) {
+                                                       int nCellsX, int nCellsY, int nCellsZ) {
 
   // light speed
   double n = 2.2; // PWO refractive index
   double c0 = 299.792458/n; // mm/ns
   double c = c0/n;
 
-  vector<vector<vector<double>>> angle_matrix(nCellsX, vector<vector<double>>(nCellsY, vector<double>(nCellsZ, 0)));
-  vector<vector<vector<double>>>  time_matrix(nCellsX, vector<vector<double>>(nCellsY, vector<double>(nCellsZ, 0)));
+  vector<vector<vector<double>>> angle_matrix(nCells[0], vector<vector<double>>(nCells[1], vector<double>(nCells[2], 0)));
+  vector<vector<vector<double>>>  time_matrix(nCells[0], vector<vector<double>>(nCells[1], vector<double>(nCells[2], 0)));
   
   // loop over y
   for(int j = 0; j < nCellsY; j++) {
