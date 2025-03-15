@@ -231,7 +231,7 @@ double offAxis_SolidAngle(double A, double B, double a, double b, double d) {
 void genPhotonTree(string filename, string treename, string outputFilePath,
                    vector<float>& emission_matrix, int max_N,
                    TRandom3 rng,
-                   int verbose=0, bool primary_only=true, int max_event=1000) {
+                   int verbose=0, bool primary_only=true, int max_event) {
 
   auto start_time = std::chrono::high_resolution_clock::now();
   
@@ -602,6 +602,11 @@ vector<vector<vector<vector<double>>>> create_matrices(double cellSizeX, double 
   return result;
 }
 
+/////////////////////////////////////////////////////////////////
+//                                                             //
+//                            MAIN                             //
+//                                                             //
+/////////////////////////////////////////////////////////////////
 
 int main(int argc, char* argv[]) {
 
