@@ -697,7 +697,7 @@ int main(int argc, char* argv[]) {
 
 
   genPhotonTree(fileName, "outputTree", outputFilePath, emission_matrix,
-                reflections, verbose, primary_only, my_max_event);
+                reflections, rng, verbose, primary_only, my_max_event);
 
 	cout << "File processing completed." << endl;
 
