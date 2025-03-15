@@ -1,7 +1,8 @@
 
 
 #!/bin/bash
-# Log fileLOG_FILE="genPhotons.log"
+# Log file
+LOG_FILE="genPhotons.log"
 # Pulizia del log precedente
 > "$LOG_FILE"
 # Definizione dei comandi da eseguire
