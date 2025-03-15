@@ -20,7 +20,7 @@ COMMANDS=(
 for CMD in "${COMMANDS[@]}"; do  
 echo "Eseguendo: $CMD" | tee -a "$LOG_FILE"  
 # Esegui il comando e registra il tempo di esecuzione  
-{ time $CMD; } &>> "$LOG_FILE"  
+{ time $CMD; } > "$LOG_FILE"  
 if [ $? -eq 0 ]; then    
 echo "✔️ Completato: $CMD" | tee -a "$LOG_FILE"  
 else    
