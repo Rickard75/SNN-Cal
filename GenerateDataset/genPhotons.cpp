@@ -609,7 +609,11 @@ int main(int argc, char* argv[]) {
   string outputFilePath = "./";
   int verbose = 0;
   bool primary_only = false;
-  int max_event = 1000;
+  int max_event; // = 1000;
+
+  cout << "Vecio, insert number of events: ";
+  cin >> max_event;
+
   int reflections = 0;
   for (int i = 1; i < argc; i++) {
     std::string flag(argv[i]);
