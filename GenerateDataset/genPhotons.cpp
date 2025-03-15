@@ -654,13 +654,13 @@ int main(int argc, char* argv[]) {
       primary_only = true;
     }
 
-    else if (flag.find("max_event") != string::npos) {
-      max_event = std::stoi(flag.substr(12));
-    }
-    else if (flag=="-e") {
-      i += 1;
-      max_event = std::stoi(argv[i]);
-    }
+    // else if (flag.find("max_event") != string::npos) {
+    //   max_event = std::stoi(flag.substr(12));
+    // }
+    // else if (flag=="-e") {
+    //   i += 1;
+    //   max_event = std::stoi(argv[i]);
+    // }
     
     else if (flag.find("reflections") != string::npos) {
       reflections = std::stoi(flag.substr(14));
