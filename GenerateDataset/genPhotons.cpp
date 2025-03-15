@@ -695,6 +695,10 @@ int main(int argc, char* argv[]) {
        << "\n---------------------------------------\n\n"
        << "Analyzing file " << fileName << ":" << endl;
 
+  TRandom3 rng;
+  if(seed != -1){
+    rng.SetSeed(seed);
+  }
 
   genPhotonTree(fileName, "outputTree", outputFilePath, emission_matrix,
                 reflections, rng, verbose, primary_only, my_max_event);
