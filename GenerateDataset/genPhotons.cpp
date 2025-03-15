@@ -286,6 +286,7 @@ void genPhotonTree(string filename, string treename, string outputFilePath,
   if(max_event < n_evts){
     n_evts = max_event;
   }
+  cout << "max_events: " << max_event << endl;
   for (int i = 0; i < n_evts; i++) {
 
     if(verbose) {
