@@ -620,6 +620,7 @@ int main(int argc, char* argv[]) {
   cin >> my_max_event;
 
   int reflections = 0;
+  int seed = -1;
   for (int i = 1; i < argc; i++) {
     std::string flag(argv[i]);
 
