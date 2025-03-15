@@ -231,7 +231,7 @@ double offAxis_SolidAngle(double A, double B, double a, double b, double d) {
 void genPhotonTree(string filename, string treename, string outputFilePath,
                    vector<float>& emission_matrix, int max_N,
                    TRandom3 rng,
-                   int verbose=0, bool primary_only=true, int max_event) {
+                   int verbose=0, bool primary_only=true, int max_event=1000) {
 
   auto start_time = std::chrono::high_resolution_clock::now();
   
@@ -614,10 +614,10 @@ int main(int argc, char* argv[]) {
   string outputFilePath = "./";
   int verbose = 0;
   bool primary_only = false;
-  int max_event; // = 1000;
+  int my_max_event; // = 1000;
 
   cout << "Vecio, insert number of events: ";
-  cin >> max_event;
+  cin >> my_max_event;
 
   int reflections = 0;
   for (int i = 1; i < argc; i++) {
@@ -697,7 +697,7 @@ int main(int argc, char* argv[]) {
 
 
   genPhotonTree(fileName, "outputTree", outputFilePath, emission_matrix,
-                reflections, verbose, primary_only, max_event);
+                reflections, verbose, primary_only, my_max_event);
 
 	cout << "File processing completed." << endl;
 
