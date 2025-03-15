@@ -7,15 +7,15 @@ LOG_FILE="genPhotons.log"
 > "$LOG_FILE"
 # Definizione dei comandi da eseguire
 COMMANDS=(  
-# "./genPhotons4 -o ../DataThesis/uniform/po_uni_10e -f /lustre/cmsdata/optCalData/pion/pion_1.root -v 1 -e 10 -po -r 3"  
-# "./genPhotons4 -o ../DataThesis/uniform/po_uni_10e -f /lustre/cmsdata/optCalData/kaon/kaon_1.root -v 1 -e 10 -po -r 3"  
-# "./genPhotons4 -o ../DataThesis/uniform/po_uni_10e -f /lustre/cmsdata/optCalData/proton/proton_1.root -v 1 -e 10 -po -r 3"
-# "./genPhotons4 -o ../DataThesis/uniform/po_uni_200e -f /lustre/cmsdata/optCalData/pion/pion_1.root -v 1 -e 200 -po -r 3"
-# "./genPhotons4 -o ../DataThesis/uniform/po_uni_200e -f /lustre/cmsdata/optCalData/kaon/kaon_1.root -v 1 -e 200 -po -r 3"
-# "./genPhotons4 -o ../DataThesis/uniform/po_uni_200e -f /lustre/cmsdata/optCalData/proton/proton_1.root -v 1 -e 200 -po -r 3"
-"./genPhotons4 -o ../DataThesis/uniform/po_uni_1000e -f /lustre/cmsdata/optCalData/pion/pion_1.root -v 1 -e 1000 -po -r 3"  
-"./genPhotons4 -o ../DataThesis/uniform/po_uni_1000e -f /lustre/cmsdata/optCalData/kaon/kaon_1.root -v 1 -e 1000 -po -r 3"  
-"./genPhotons4 -o ../DataThesis/uniform/po_uni_1000e -f /lustre/cmsdata/optCalData/proton/proton_1.root -v 1 -e 1000 -po -r 3")
+# "./genPhotons4 -o ../DataThesis/uniform/po_uni_10e/ -f /lustre/cmsdata/optCalData/pion/pion_1.root -v 1 -e 10 -po -r 3"  
+# "./genPhotons4 -o ../DataThesis/uniform/po_uni_10e/ -f /lustre/cmsdata/optCalData/kaon/kaon_1.root -v 1 -e 10 -po -r 3"  
+# "./genPhotons4 -o ../DataThesis/uniform/po_uni_10e/ -f /lustre/cmsdata/optCalData/proton/proton_1.root -v 1 -e 10 -po -r 3"
+# "./genPhotons4 -o ../DataThesis/uniform/po_uni_200e/ -f /lustre/cmsdata/optCalData/pion/pion_1.root -v 1 -e 200 -po -r 3"
+# "./genPhotons4 -o ../DataThesis/uniform/po_uni_200e/ -f /lustre/cmsdata/optCalData/kaon/kaon_1.root -v 1 -e 200 -po -r 3"
+# "./genPhotons4 -o ../DataThesis/uniform/po_uni_200e/ -f /lustre/cmsdata/optCalData/proton/proton_1.root -v 1 -e 200 -po -r 3"
+"./genPhotons4 -o ../DataThesis/uniform/po_uni_1000e/ -f /lustre/cmsdata/optCalData/pion/pion_1.root -v 1 -e 1000 -po -r 3"  
+"./genPhotons4 -o ../DataThesis/uniform/po_uni_1000e/ -f /lustre/cmsdata/optCalData/kaon/kaon_1.root -v 1 -e 1000 -po -r 3"  
+"./genPhotons4 -o ../DataThesis/uniform/po_uni_1000e/ -f /lustre/cmsdata/optCalData/proton/proton_1.root -v 1 -e 1000 -po -r 3")
 # Esegui i comandi uno dopo l'altro
 for CMD in "${COMMANDS[@]}"; do  
 echo "Eseguendo: $CMD" | tee -a "$LOG_FILE"  
