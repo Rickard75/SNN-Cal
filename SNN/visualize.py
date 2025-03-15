@@ -163,3 +163,4 @@ def plot_time_gif(index, dataset, cleanup=True):
         if cleanup:
             for filename in filenames:
                 os.remove(filename)
+                
