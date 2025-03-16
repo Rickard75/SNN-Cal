@@ -614,10 +614,10 @@ int main(int argc, char* argv[]) {
   string outputFilePath = "./";
   int verbose = 0;
   bool primary_only = false;
-  int my_max_event; // = 1000;
+  int my_max_event = 1000;
 
-  cout << "Vecio, insert number of events: ";
-  cin >> my_max_event;
+  //cout << "Vecio, insert number of events: ";
+  //cin >> my_max_event;
 
   int reflections = 0;
   int seed = -1;
@@ -655,13 +655,13 @@ int main(int argc, char* argv[]) {
       primary_only = true;
     }
 
-    // else if (flag.find("max_event") != string::npos) {
-    //   max_event = std::stoi(flag.substr(12));
-    // }
-    // else if (flag=="-e") {
-    //   i += 1;
-    //   max_event = std::stoi(argv[i]);
-    // }
+     else if (flag.find("max_event") != string::npos) {
+       my_max_event = std::stoi(flag.substr(12));
+     }
+     else if (flag=="-e") {
+       i += 1;
+       my_max_event = std::stoi(argv[i]);
+     }
     
     else if (flag.find("reflections") != string::npos) {
       reflections = std::stoi(flag.substr(14));
