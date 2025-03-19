@@ -690,7 +690,7 @@ int main(int argc, char* argv[]) {
   */
 
   cout << "Reading matrices..." << endl;
-  vector<float> emission_matrix = read_matrices("emission_matrix_uni_wolf.bin");
+  vector<float> emission_matrix = read_matrices("emission_matrix_std.bin");
 
   cout << "Timing and solid angle matrices computed.\n"
        << "\n---------------------------------------\n\n"
