@@ -170,9 +170,9 @@ class multi_MSELoss(torch.nn.Module):
         self.func = []
         for i in range(len(set_mse)):
             if set_mse[i]:
-                self.func.append(F.mse_loss)
+                self.func.append(F.mse_loss) # MSE
             else:
-                self.func.append(F.l1_loss)
+                self.func.append(F.l1_loss) # MAE
 
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
