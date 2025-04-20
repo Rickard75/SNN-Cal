@@ -1,5 +1,5 @@
-Signal data for event #13266
-<Z>	<X>	<TIMESTEP>	<PHOTONS>
+Signal data for event #13266 with energy 66.75804802708538
+<z>	<x>	<t>	<nph>
 0	9	9	15.0
 1	5	9	3.0
 1	6	9	20.0

@@ -1,4 +1,4 @@
-Signal data for event #13266
+Signal data for event #13266 with energy 66.75804802708538
 <z>	<x>	<t>	<nph>
 0	0	0	0.0
 0	1	0	0.0
